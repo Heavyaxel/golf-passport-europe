@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 760" role="img" aria-label="Schematische Europakarte mit Laendergrenzen">
+  <rect width="620" height="760" fill="#9cc7d5"/>
+  <g stroke="#f8f3e8" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="portugal" fill="#79a982" d="M105 462l47-10 16 80-17 85-44-4-18-72z"/>
+    <path id="spain" fill="#8dbc94" d="M151 444l140 18 33 73-54 84-119-2 17-85z"/>
+    <path id="france" fill="#9aca9d" d="M210 322l116 9 56 74-58 130-33-73-140-18-11-55z"/>
+    <path id="ireland" fill="#78a77d" d="M95 270l54 21-16 64-53 10-25-51z"/>
+    <path id="uk" fill="#86b88a" d="M167 224l70 36-20 63 31 58-44 37-64-29 16-61-26-44z"/>
+    <path id="netherlands" fill="#7faf89" d="M331 278l52 2 7 49-47 9-26-26z"/>
+    <path id="belgium" fill="#8fc094" d="M300 326l43 12 4 39-49 18-29-38z"/>
+    <path id="germany" fill="#78ae85" d="M383 267l86 36 14 110-46 52-90-88-4-39 47-9z"/>
+    <path id="switzerland" fill="#9fd0a3" d="M324 535l58-130 55 60-12 44-55 29z"/>
+    <path id="austria" fill="#8cbd91" d="M437 465l96 18 24 48-132-22z"/>
+    <path id="italy" fill="#80b184" d="M382 509l43 0 78 72 38 94-43 17-54-88-67-42z"/>
+    <path id="denmark" fill="#8fc598" d="M400 216l62 20 7 67-86-36z"/>
+    <path id="norway" fill="#88b98d" d="M384 29l64 10 5 100-44 77-58-29-5-78z"/>
+    <path id="sweden" fill="#7eaf87" d="M448 39l66 51 8 154-60-8-53-20 44-77z"/>
+    <path id="finland" fill="#8dbf92" d="M514 90l61 42-4 135-49-23z"/>
+    <path id="poland" fill="#91c197" d="M469 303l85 14 20 79-91 17z"/>
+    <path id="czechia" fill="#9bca9f" d="M483 413l74-17 24 46-48 41-96-18z"/>
+    <path id="balkans" fill="#82b68b" d="M557 442l35 81-50 74-109-32-8-56 132 22-24-48z"/>
+    <path id="eastern-europe" fill="#84b88c" d="M554 317l46 7v194l-43-76-24 41 48-41-24-46z"/>
+  </g>
+  <g fill="none" stroke="#5a8c74" stroke-width="2" opacity=".7">
+    <path d="M0 0h620v760H0z"/>
+    <path d="M105 462l47-10 140 10 90-57 101 8 91-17"/>
+    <path d="M210 322l116 9 17 7 40-58 79-44 60 8"/>
+    <path d="M324 535l46 3 55-29 132 22"/>
+  </g>
+  <g fill="#24483a" opacity=".72" font-family="Arial, sans-serif" font-size="16" font-weight="700">
+    <text x="392" y="377">DE</text>
+    <text x="230" y="410">FR</text>
+    <text x="197" y="548">ES</text>
+    <text x="103" y="548">PT</text>
+    <text x="335" y="520">CH</text>
+    <text x="466" y="499">AT</text>
+    <text x="401" y="611">IT</text>
+    <text x="176" y="325">UK</text>
+    <text x="91" y="326">IE</text>
+    <text x="404" y="300">NL</text>
+    <text x="466" y="164">SE</text>
+    <text x="386" y="121">NO</text>
+    <text x="524" y="171">FI</text>
+    <text x="506" y="361">PL</text>
+  </g>
+</svg>

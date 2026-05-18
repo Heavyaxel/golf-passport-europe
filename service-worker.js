@@ -1,13 +1,14 @@
-const CACHE_NAME = "golf-passport-v11";
+const CACHE_NAME = "golf-passport-v18";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=11",
-  "./app.js?v=11",
-  "./app-config.js?v=11",
+  "./styles.css?v=18",
+  "./app.js?v=18",
+  "./app-config.js?v=18",
   "./manifest.json",
   "./assets/europe-map.svg",
-  "./assets/icon.svg"
+  "./assets/icon.svg",
+  "./assets/europe-countries.svg"
 ];
 
 self.addEventListener("install", (event) => {

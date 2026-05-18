@@ -9,8 +9,10 @@ Die App nutzt keine kostenpflichtige Google Maps API mehr.
 - Karte: Leaflet
 - Kartendaten: OpenStreetMap
 - Golfplatzsuche: Overpass API mit OpenStreetMap-Tags wie `leisure=golf_course` und `sport=golf`
-- Navigation: externer OpenStreetMap-Routenlink ohne API Key
+- Navigation: Links zu Google Maps und Apple Maps ohne API Key
 - Profil und Stickeralbum: lokal im Browser per `localStorage`
+
+Die GPS-Funktion zeigt Golfplaetze in einem Umkreis von 30 Kilometern an.
 
 Wichtig: OpenStreetMap ist communitygepflegt. Die App kann sehr viele europaeische Golfplaetze finden, aber nur Plaetze, die in OpenStreetMap korrekt hinterlegt sind. Die oeffentliche Overpass API ist kostenlos, aber nicht fuer sehr hohe Dauerlast gedacht. Fuer eine groessere oeffentliche App waere spaeter ein eigener Overpass-/Tile-Anbieter sinnvoll.
 

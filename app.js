@@ -1,6 +1,22 @@
-const storageKey = "golf-passport-v3";
+const storageKey = "golf-passport-v6";
 const overpassEndpoint = "https://overpass-api.de/api/interpreter";
 const europeBounds = [[34.5, -11.5], [71.5, 41.5]];
+const countryFlagPositions = {
+  Deutschland: { x: 68, y: 54 },
+  Schottland: { x: 30, y: 34 },
+  England: { x: 31, y: 46 },
+  "Vereinigtes Koenigreich": { x: 31, y: 42 },
+  Irland: { x: 17, y: 45 },
+  Frankreich: { x: 43, y: 57 },
+  Spanien: { x: 36, y: 77 },
+  Portugal: { x: 20, y: 78 },
+  Schweiz: { x: 60, y: 72 },
+  Oesterreich: { x: 76, y: 69 },
+  Niederlande: { x: 62, y: 44 },
+  Schweden: { x: 80, y: 21 },
+  "OpenStreetMap": { x: 50, y: 50 },
+  Europa: { x: 50, y: 50 }
+};
 
 const demoCourses = [
   { id: "demo-golfclub-hannover", name: "Golfclub Hannover", country: "Deutschland", region: "Hannover / Garbsen", lat: 52.433, lng: 9.629, holes: 27, rating: 4.5, note: "Demo-Eintrag fuer die Suche rund um Hannover" },
@@ -41,6 +57,11 @@ const els = {
   albumTitle: document.querySelector("#albumTitle"),
   visitedCount: document.querySelector("#visitedCount"),
   countryCount: document.querySelector("#countryCount"),
+  countryStat: document.querySelector("#countryStat"),
+  countryModal: document.querySelector("#countryModal"),
+  countryFlagLayer: document.querySelector("#countryFlagLayer"),
+  countryNote: document.querySelector("#countryNote"),
+  closeCountryModal: document.querySelector("#closeCountryModal"),
   nearbyCount: document.querySelector("#nearbyCount"),
   completionValue: document.querySelector("#completionValue")
 };
@@ -49,6 +70,7 @@ function boot() {
   initMap();
   setupViews();
   setupPanelDismiss();
+  setupCountryModal();
   setupAccount();
   els.search.addEventListener("input", (event) => filterCourses(event.target.value));
   els.nearbyButton.addEventListener("click", findNearby);
@@ -101,9 +123,10 @@ function renderCourses(courses) {
 }
 
 function makeCourseIcon(course) {
+  const isPinned = state.visited.has(course.id);
   const classes = [
     "leaflet-course-marker",
-    state.visited.has(course.id) ? "visited" : "",
+    isPinned ? "visited" : "",
     state.selectedId === course.id ? "active" : ""
   ].filter(Boolean).join(" ");
 
@@ -141,13 +164,15 @@ function renderSheet(course) {
     </div>
     <div class="action-row">
       <button class="primary-action" id="pinCourse" type="button">${visited ? "Sticker loesen" : "Anpinnen"}</button>
-      <button class="secondary-action" id="navigateCourse" type="button">Navigieren</button>
+      <button class="secondary-action" id="googleNavigate" type="button">Google</button>
+      <button class="secondary-action" id="appleNavigate" type="button">Apple</button>
     </div>
   `;
   els.sheet.classList.add("open");
   document.querySelector("#closeSheet").addEventListener("click", closeSheet);
   document.querySelector("#pinCourse").addEventListener("click", () => toggleVisited(course.id));
-  document.querySelector("#navigateCourse").addEventListener("click", () => navigateTo(course));
+  document.querySelector("#googleNavigate").addEventListener("click", () => navigateTo(course, "google"));
+  document.querySelector("#appleNavigate").addEventListener("click", () => navigateTo(course, "apple"));
 }
 
 function closeSheet() {
@@ -158,6 +183,7 @@ function closeSheet() {
 }
 
 function toggleVisited(id) {
+  const wasVisited = state.visited.has(id);
   if (state.visited.has(id)) {
     state.visited.delete(id);
   } else {
@@ -166,13 +192,35 @@ function toggleVisited(id) {
   localStorage.setItem(storageKey, JSON.stringify([...state.visited]));
   renderAlbum();
   selectCourse(id);
+  if (!wasVisited) showPinFirework();
+}
+
+function showPinFirework() {
+  const existing = document.querySelector(".pin-firework");
+  if (existing) existing.remove();
+  const animation = document.createElement("div");
+  animation.className = "pin-firework";
+  animation.setAttribute("aria-hidden", "true");
+  animation.innerHTML = `
+    <div class="pin-firework-ball"></div>
+    <span style="--x: 0; --y: -92px; --c: #f0c85a"></span>
+    <span style="--x: 70px; --y: -66px; --c: #ffffff"></span>
+    <span style="--x: 94px; --y: 2px; --c: #2fa8cc"></span>
+    <span style="--x: 62px; --y: 76px; --c: #f0c85a"></span>
+    <span style="--x: -2px; --y: 96px; --c: #ffffff"></span>
+    <span style="--x: -74px; --y: 66px; --c: #2fa8cc"></span>
+    <span style="--x: -92px; --y: -4px; --c: #f0c85a"></span>
+    <span style="--x: -62px; --y: -74px; --c: #ffffff"></span>
+  `;
+  document.body.appendChild(animation);
+  window.setTimeout(() => animation.remove(), 2050);
 }
 
 function renderAlbum() {
   const knownCourses = mergeCourses(state.allCourses, state.courses);
   const visitedCourses = knownCourses.filter((course) => state.visited.has(course.id));
   const visibleCourses = getPanelCourses(visitedCourses);
-  const countries = new Set(visitedCourses.map((course) => course.country).filter(Boolean));
+  const countries = new Set(visitedCourses.map((course) => getCourseCountry(course)).filter(Boolean));
   const completion = knownCourses.length ? Math.round((visitedCourses.length / knownCourses.length) * 100) : 0;
 
   els.albumTitle.textContent = `${visitedCourses.length} Plaetze angepinnt`;
@@ -199,9 +247,9 @@ function renderAlbum() {
     sticker.type = "button";
     sticker.className = `sticker ${collected ? "collected" : ""}`;
     sticker.innerHTML = `
-      <div class="sticker-ball">${collected ? "✓" : ""}</div>
+      <div class="sticker-ball ${collected ? "collected" : ""}">${collected ? "✓" : ""}</div>
       <h3>${escapeHtml(course.name)}</h3>
-      <p>${escapeHtml(course.country || "Europa")} · ${escapeHtml(course.region || "OpenStreetMap")}</p>
+      <p>${escapeHtml(getCourseCountry(course) || "Europa")} · ${escapeHtml(course.region || "OpenStreetMap")}</p>
     `;
     sticker.addEventListener("click", () => {
       activateView("map");
@@ -209,6 +257,49 @@ function renderAlbum() {
     });
     els.stickerGrid.appendChild(sticker);
   });
+}
+
+function setupCountryModal() {
+  els.countryStat.addEventListener("click", () => {
+    if (state.activeView === "album") openCountryModal();
+  });
+  els.closeCountryModal.addEventListener("click", closeCountryModal);
+  els.countryModal.addEventListener("click", (event) => {
+    if (event.target === els.countryModal) closeCountryModal();
+  });
+}
+
+function openCountryModal() {
+  const knownCourses = mergeCourses(state.allCourses, state.courses);
+  const countryCounts = knownCourses
+    .filter((course) => state.visited.has(course.id))
+    .reduce((counts, course) => {
+      const country = getCourseCountry(course);
+      if (country) counts.set(country, (counts.get(country) || 0) + 1);
+      return counts;
+    }, new Map());
+  const visitedCountries = [...countryCounts.keys()];
+
+  els.countryFlagLayer.innerHTML = "";
+  visitedCountries.forEach((country) => {
+    const position = countryFlagPositions[country] || countryFlagPositions.Europa;
+    const flag = document.createElement("div");
+    flag.className = "country-flag";
+    flag.style.left = `${position.x}%`;
+    flag.style.top = `${position.y}%`;
+    flag.title = country;
+    flag.innerHTML = `<span>${countryCounts.get(country)}</span>`;
+    els.countryFlagLayer.appendChild(flag);
+  });
+
+  els.countryNote.textContent = visitedCountries.length
+    ? visitedCountries.join(", ")
+    : "Noch keine Laender angepinnt.";
+  els.countryModal.hidden = false;
+}
+
+function closeCountryModal() {
+  els.countryModal.hidden = true;
 }
 
 function getPanelCourses(visitedCourses) {
@@ -326,7 +417,7 @@ function osmElementToCourse(element) {
   return {
     id: `osm-${element.type}-${element.id}`,
     name: tags.name,
-    country: tags["addr:country"] || "OpenStreetMap",
+    country: normalizeCountry(tags["addr:country"], lat, lng),
     region: tags["addr:city"] || tags["addr:town"] || tags["addr:village"] || tags["addr:suburb"] || "Europa",
     lat,
     lng,
@@ -344,7 +435,7 @@ function findNearby() {
 
   navigator.geolocation.getCurrentPosition(async (position) => {
     const userPoint = { lat: position.coords.latitude, lng: position.coords.longitude };
-    const radiusKm = 75;
+    const radiusKm = 30;
     const nearbyBounds = pointToBounds(userPoint, radiusKm);
 
     try {
@@ -438,9 +529,14 @@ function updateAccountButton() {
   els.accountButton.setAttribute("aria-label", state.user ? "Lokales Profil aktiv" : "Lokales Profil aktivieren");
 }
 
-function navigateTo(course) {
-  const destination = encodeURIComponent(`${course.lat},${course.lng}`);
-  window.open(`https://www.openstreetmap.org/directions?to=${destination}`, "_blank", "noopener");
+function navigateTo(course, provider) {
+  const coords = `${course.lat},${course.lng}`;
+  const label = encodeURIComponent(course.name);
+  const destination = encodeURIComponent(coords);
+  const url = provider === "apple"
+    ? `https://maps.apple.com/?daddr=${destination}&q=${label}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+  window.open(url, "_blank", "noopener");
 }
 
 function fitCourses(courses) {
@@ -456,7 +552,79 @@ function coursesInCurrentBounds(courses) {
 }
 
 function mergeCourses(...groups) {
-  return [...new Map(groups.flat().map((course) => [course.id, course])).values()];
+  return [...new Map(groups.flat().map((course) => {
+    const normalized = { ...course, country: getCourseCountry(course) };
+    return [normalized.id, normalized];
+  })).values()];
+}
+
+function getCourseCountry(course) {
+  return normalizeCountry(course.country, course.lat, course.lng);
+}
+
+function normalizeCountry(country, lat, lng) {
+  const value = String(country || "").trim().toLowerCase();
+  const countryMap = {
+    de: "Deutschland",
+    deu: "Deutschland",
+    germany: "Deutschland",
+    deutschland: "Deutschland",
+    at: "Oesterreich",
+    aut: "Oesterreich",
+    austria: "Oesterreich",
+    oesterreich: "Oesterreich",
+    "österreich": "Oesterreich",
+    ch: "Schweiz",
+    che: "Schweiz",
+    switzerland: "Schweiz",
+    schweiz: "Schweiz",
+    fr: "Frankreich",
+    fra: "Frankreich",
+    france: "Frankreich",
+    frankreich: "Frankreich",
+    es: "Spanien",
+    esp: "Spanien",
+    spain: "Spanien",
+    spanien: "Spanien",
+    pt: "Portugal",
+    prt: "Portugal",
+    portugal: "Portugal",
+    gb: "Vereinigtes Koenigreich",
+    gbr: "Vereinigtes Koenigreich",
+    uk: "Vereinigtes Koenigreich",
+    "united kingdom": "Vereinigtes Koenigreich",
+    england: "England",
+    schottland: "Schottland",
+    scotland: "Schottland",
+    ie: "Irland",
+    irl: "Irland",
+    ireland: "Irland",
+    irland: "Irland",
+    nl: "Niederlande",
+    nld: "Niederlande",
+    netherlands: "Niederlande",
+    niederlande: "Niederlande",
+    se: "Schweden",
+    swe: "Schweden",
+    sweden: "Schweden",
+    schweden: "Schweden"
+  };
+  if (countryMap[value]) return countryMap[value];
+  return inferCountryFromCoords(lat, lng) || (country && country !== "OpenStreetMap" ? country : "Europa");
+}
+
+function inferCountryFromCoords(lat, lng) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return "";
+  if (lat >= 47.2 && lat <= 55.2 && lng >= 5.5 && lng <= 15.5) return "Deutschland";
+  if (lat >= 46.2 && lat <= 49.2 && lng >= 9.4 && lng <= 17.3) return "Oesterreich";
+  if (lat >= 45.7 && lat <= 47.9 && lng >= 5.8 && lng <= 10.7) return "Schweiz";
+  if (lat >= 41.0 && lat <= 51.5 && lng >= -5.5 && lng <= 9.8) return "Frankreich";
+  if (lat >= 35.7 && lat <= 43.9 && lng >= -9.5 && lng <= 4.4) return "Spanien";
+  if (lat >= 36.8 && lat <= 42.3 && lng >= -9.6 && lng <= -6.0) return "Portugal";
+  if (lat >= 49.8 && lat <= 60.9 && lng >= -8.8 && lng <= 1.9) return "Vereinigtes Koenigreich";
+  if (lat >= 51.0 && lat <= 55.6 && lng >= 2.8 && lng <= 7.4) return "Niederlande";
+  if (lat >= 55.0 && lat <= 69.5 && lng >= 10.5 && lng <= 24.5) return "Schweden";
+  return "";
 }
 
 function boundsToBbox(bounds) {

@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="styles.css?v=11">
+    <link rel="stylesheet" href="styles.css?v=18">
   </head>
   <body>
     <main class="app-shell">
@@ -59,10 +59,10 @@
             <strong id="visitedCount">0</strong>
             <span>besucht</span>
           </div>
-          <div>
+          <button class="country-stat" id="countryStat" type="button" aria-label="Besuchte Laender anzeigen">
             <strong id="countryCount">0</strong>
             <span>Länder</span>
-          </div>
+          </button>
           <div>
             <strong id="nearbyCount">0</strong>
             <span>in der Nähe</span>
@@ -75,10 +75,23 @@
         <div class="sheet-handle" aria-hidden="true"></div>
         <div id="sheetContent" class="sheet-content"></div>
       </section>
+
+      <section class="country-modal" id="countryModal" aria-modal="true" aria-label="Besuchte Laender" role="dialog" hidden>
+        <div class="country-card">
+          <button class="sheet-close" id="closeCountryModal" type="button" aria-label="Laenderkarte schliessen">×</button>
+          <p class="eyebrow">Laenderkarte</p>
+          <h2>Deine Golf-Reisen</h2>
+          <div class="country-map">
+            <img src="assets/europe-countries.svg" alt="Schematische Europakarte mit Laendergrenzen">
+            <div id="countryFlagLayer" class="country-flag-layer"></div>
+          </div>
+          <p class="country-note" id="countryNote">Noch keine Laender angepinnt.</p>
+        </div>
+      </section>
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app-config.js?v=11"></script>
-    <script src="app.js?v=11"></script>
+    <script src="app-config.js?v=18"></script>
+    <script src="app.js?v=18"></script>
   </body>
 </html>
