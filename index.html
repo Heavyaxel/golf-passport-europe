@@ -10,27 +10,21 @@
     <title>Golf Passport Europe</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icon.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="styles.css?v=7">
   </head>
   <body>
     <main class="app-shell">
       <section class="map-panel" aria-label="Golfplatzkarte">
-        <div id="googleMap" class="google-map" hidden></div>
-        <div id="demoMap" class="demo-map" role="application" aria-label="Interaktive Demo-Karte von Europa">
-          <div class="map-canvas" id="mapCanvas">
-            <img class="europe-art" src="assets/europe-map.svg" alt="">
-            <div class="map-grid" aria-hidden="true"></div>
-            <div class="course-layer" id="courseLayer"></div>
-          </div>
-        </div>
+        <div id="leafletMap" class="leaflet-map" role="application" aria-label="Interaktive OpenStreetMap-Karte von Europa"></div>
 
         <header class="top-bar">
           <div>
             <p class="eyebrow">Golf Passport Europe</p>
             <h1>Deine gespielten Plätze</h1>
           </div>
-          <button class="icon-button" id="accountButton" type="button" aria-label="Mit Google anmelden">
-            <span class="google-g">G</span>
+          <button class="icon-button" id="accountButton" type="button" aria-label="Lokales Profil aktivieren">
+            <span class="profile-dot">P</span>
           </button>
         </header>
 
@@ -82,7 +76,8 @@
       </section>
     </main>
 
-    <script src="app-config.js?v=4"></script>
-    <script src="app.js?v=4"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app-config.js?v=7"></script>
+    <script src="app.js?v=7"></script>
   </body>
 </html>

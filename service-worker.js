@@ -1,10 +1,10 @@
-const CACHE_NAME = "golf-passport-v4";
+const CACHE_NAME = "golf-passport-v7";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js?v=4",
-  "./app-config.js?v=4",
+  "./styles.css?v=7",
+  "./app.js?v=7",
+  "./app-config.js?v=7",
   "./manifest.json",
   "./assets/europe-map.svg",
   "./assets/icon.svg"

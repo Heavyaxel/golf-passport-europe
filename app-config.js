@@ -1,4 +1,1 @@
-window.GOLF_APP_CONFIG = {
-  googleMapsApiKey: "",
-  googleOAuthClientId: ""
-};
+window.GOLF_APP_CONFIG = {};

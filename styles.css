@@ -46,64 +46,32 @@ button {
   overflow: hidden;
 }
 
-.google-map,
-.demo-map {
-  position: absolute;
-  inset: 0;
-}
-
-.demo-map {
-  touch-action: none;
-}
-
-.map-canvas {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(88vw, 980px);
-  aspect-ratio: 10 / 13;
-  transform: translate(-50%, -50%) scale(var(--zoom, 1));
-  border: 1px solid rgba(255, 255, 255, .36);
-  box-shadow: inset 0 0 0 1px rgba(23, 35, 30, .08);
-  transition: transform .12s ease-out;
-}
-
-.europe-art,
-.map-grid,
-.course-layer {
-  position: absolute;
+.leaflet-map {
+  position: absolute !important;
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 0;
 }
 
-.europe-art {
-  object-fit: cover;
-  user-select: none;
-  pointer-events: none;
+.leaflet-map .leaflet-control-attribution {
+  font-size: 10px;
 }
 
-.map-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, .24) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .24) 1px, transparent 1px);
-  background-size: 80px 80px;
-  mix-blend-mode: soft-light;
-}
-
-.course-marker {
-  position: absolute;
+.leaflet-course-marker {
+  position: relative;
+  display: block;
   width: 24px;
   height: 24px;
+  padding: 0;
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--fairway-2);
   box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
-  transform: translate(-50%, -50%);
   transition: transform .18s ease, background .18s ease;
 }
 
-.course-marker::after {
+.leaflet-course-marker::after {
   content: "";
   position: absolute;
   inset: 6px;
@@ -111,12 +79,12 @@ button {
   background: rgba(255, 255, 255, .5);
 }
 
-.course-marker.visited {
+.leaflet-course-marker.visited {
   background: var(--gold);
 }
 
-.course-marker.active {
-  transform: translate(-50%, -50%) scale(1.35);
+.leaflet-course-marker.active {
+  transform: scale(1.35);
   z-index: 4;
 }
 
@@ -180,9 +148,13 @@ h2 {
   box-shadow: var(--shadow);
 }
 
-.google-g {
+.profile-dot {
   font-weight: 900;
-  color: #4285f4;
+  color: var(--fairway);
+}
+
+.icon-button.signed-in {
+  background: var(--gold);
 }
 
 .search-card {
@@ -478,8 +450,8 @@ h2 {
     display: block;
   }
 
-  .map-canvas {
-    width: 124vw;
+  .leaflet-control-zoom {
+    display: none;
   }
 
   h1 {
