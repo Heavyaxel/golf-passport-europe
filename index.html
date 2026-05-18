@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#11382e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golf Passport">
+    <title>Golf Passport Europe</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="map-panel" aria-label="Golfplatzkarte">
+        <div id="googleMap" class="google-map" hidden></div>
+        <div id="demoMap" class="demo-map" role="application" aria-label="Interaktive Demo-Karte von Europa">
+          <div class="map-canvas" id="mapCanvas">
+            <img class="europe-art" src="assets/europe-map.svg" alt="">
+            <div class="map-grid" aria-hidden="true"></div>
+            <div class="course-layer" id="courseLayer"></div>
+          </div>
+        </div>
+
+        <header class="top-bar">
+          <div>
+            <p class="eyebrow">Golf Passport Europe</p>
+            <h1>Deine gespielten Plätze</h1>
+          </div>
+          <button class="icon-button" id="accountButton" type="button" aria-label="Mit Google anmelden">
+            <span class="google-g">G</span>
+          </button>
+        </header>
+
+        <div class="search-card">
+          <label class="search-field">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="courseSearch" type="search" placeholder="Golfplatz, Land oder Region suchen">
+          </label>
+          <button class="nearby-button" id="nearbyButton" type="button">GPS</button>
+        </div>
+
+        <nav class="mode-switch" aria-label="Ansicht">
+          <button class="mode-button active" data-view="map" type="button">Karte</button>
+          <button class="mode-button" data-view="album" type="button">Album</button>
+          <button class="mode-button" data-view="nearby" type="button">Nähe</button>
+        </nav>
+      </section>
+
+      <aside class="album-panel" id="albumPanel" aria-label="Stickeralbum">
+        <div class="album-header">
+          <div>
+            <p class="eyebrow">Stickeralbum</p>
+            <h2 id="albumTitle">0 Plätze angepinnt</h2>
+          </div>
+          <div class="completion-ring" aria-label="Fortschritt">
+            <span id="completionValue">0%</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <strong id="visitedCount">0</strong>
+            <span>besucht</span>
+          </div>
+          <div>
+            <strong id="countryCount">0</strong>
+            <span>Länder</span>
+          </div>
+          <div>
+            <strong id="nearbyCount">0</strong>
+            <span>in der Nähe</span>
+          </div>
+        </div>
+        <div class="sticker-grid" id="stickerGrid"></div>
+      </aside>
+
+      <section class="sheet" id="detailSheet" aria-live="polite">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div id="sheetContent" class="sheet-content"></div>
+      </section>
+    </main>
+
+    <script src="app-config.js?v=4"></script>
+    <script src="app.js?v=4"></script>
+  </body>
+</html>
