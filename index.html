@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icon.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=11">
   </head>
   <body>
     <main class="app-shell">
@@ -19,7 +19,7 @@
         <div id="leafletMap" class="leaflet-map" role="application" aria-label="Interaktive OpenStreetMap-Karte von Europa"></div>
 
         <header class="top-bar">
-          <div>
+          <div class="title-plate">
             <p class="eyebrow">Golf Passport Europe</p>
             <h1>Deine gespielten Plätze</h1>
           </div>
@@ -43,6 +43,7 @@
         </nav>
       </section>
 
+      <button class="album-backdrop" id="albumBackdrop" type="button" aria-label="Album schliessen"></button>
       <aside class="album-panel" id="albumPanel" aria-label="Stickeralbum">
         <div class="album-header">
           <div>
@@ -77,7 +78,7 @@
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app-config.js?v=7"></script>
-    <script src="app.js?v=7"></script>
+    <script src="app-config.js?v=11"></script>
+    <script src="app.js?v=11"></script>
   </body>
 </html>

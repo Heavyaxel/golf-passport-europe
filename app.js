@@ -1,4 +1,4 @@
-const storageKey = "golf-passport-v2";
+const storageKey = "golf-passport-v3";
 const overpassEndpoint = "https://overpass-api.de/api/interpreter";
 const europeBounds = [[34.5, -11.5], [71.5, 41.5]];
 
@@ -18,6 +18,7 @@ const state = {
   courses: demoCourses,
   visited: new Set(JSON.parse(localStorage.getItem(storageKey) || "[]")),
   selectedId: null,
+  activeView: "map",
   searchQuery: "",
   nearbyIds: new Set(),
   map: null,
@@ -33,6 +34,7 @@ const els = {
   nearbyButton: document.querySelector("#nearbyButton"),
   accountButton: document.querySelector("#accountButton"),
   albumPanel: document.querySelector("#albumPanel"),
+  albumBackdrop: document.querySelector("#albumBackdrop"),
   stickerGrid: document.querySelector("#stickerGrid"),
   sheet: document.querySelector("#detailSheet"),
   sheetContent: document.querySelector("#sheetContent"),
@@ -46,6 +48,7 @@ const els = {
 function boot() {
   initMap();
   setupViews();
+  setupPanelDismiss();
   setupAccount();
   els.search.addEventListener("input", (event) => filterCourses(event.target.value));
   els.nearbyButton.addEventListener("click", findNearby);
@@ -71,6 +74,7 @@ function initMap() {
 
   L.control.zoom({ position: "bottomleft" }).addTo(state.map);
   state.map.on("moveend", scheduleVisibleFetch);
+  state.map.on("click", closeSheet);
 }
 
 function scheduleVisibleFetch() {
@@ -88,7 +92,10 @@ function renderCourses(courses) {
     const marker = L.marker([course.lat, course.lng], {
       icon: makeCourseIcon(course)
     }).addTo(state.map);
-    marker.on("click", () => selectCourse(course.id));
+    marker.on("click", (event) => {
+      if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
+      selectCourse(course.id);
+    });
     state.markers.set(course.id, marker);
   });
 }
@@ -123,6 +130,7 @@ function findCourse(id) {
 function renderSheet(course) {
   const visited = state.visited.has(course.id);
   els.sheetContent.innerHTML = `
+    <button class="sheet-close" id="closeSheet" type="button" aria-label="Fenster schliessen">×</button>
     <h3>${escapeHtml(course.name)}</h3>
     <p>${escapeHtml(course.note || "Golfplatz aus OpenStreetMap")}</p>
     <div class="course-meta">
@@ -137,6 +145,7 @@ function renderSheet(course) {
     </div>
   `;
   els.sheet.classList.add("open");
+  document.querySelector("#closeSheet").addEventListener("click", closeSheet);
   document.querySelector("#pinCourse").addEventListener("click", () => toggleVisited(course.id));
   document.querySelector("#navigateCourse").addEventListener("click", () => navigateTo(course));
 }
@@ -161,8 +170,8 @@ function toggleVisited(id) {
 
 function renderAlbum() {
   const knownCourses = mergeCourses(state.allCourses, state.courses);
-  const visibleCourses = state.searchQuery ? state.courses : knownCourses;
   const visitedCourses = knownCourses.filter((course) => state.visited.has(course.id));
+  const visibleCourses = getPanelCourses(visitedCourses);
   const countries = new Set(visitedCourses.map((course) => course.country).filter(Boolean));
   const completion = knownCourses.length ? Math.round((visitedCourses.length / knownCourses.length) * 100) : 0;
 
@@ -174,6 +183,16 @@ function renderAlbum() {
   document.documentElement.style.setProperty("--progress", `${completion}%`);
 
   els.stickerGrid.innerHTML = "";
+  if (visibleCourses.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-album";
+    empty.textContent = state.activeView === "album"
+      ? "Noch keine Plaetze angepinnt."
+      : "Keine Plaetze in dieser Ansicht.";
+    els.stickerGrid.appendChild(empty);
+    return;
+  }
+
   visibleCourses.forEach((course) => {
     const collected = state.visited.has(course.id);
     const sticker = document.createElement("button");
@@ -184,9 +203,19 @@ function renderAlbum() {
       <h3>${escapeHtml(course.name)}</h3>
       <p>${escapeHtml(course.country || "Europa")} · ${escapeHtml(course.region || "OpenStreetMap")}</p>
     `;
-    sticker.addEventListener("click", () => selectCourse(course.id));
+    sticker.addEventListener("click", () => {
+      activateView("map");
+      selectCourse(course.id);
+    });
     els.stickerGrid.appendChild(sticker);
   });
+}
+
+function getPanelCourses(visitedCourses) {
+  if (state.activeView === "album") return visitedCourses;
+  if (state.activeView === "nearby") return state.courses;
+  if (state.searchQuery) return state.courses;
+  return visitedCourses;
 }
 
 function filterCourses(term) {
@@ -344,13 +373,48 @@ function findNearby() {
 function setupViews() {
   document.querySelectorAll(".mode-button").forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll(".mode-button").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      const view = button.dataset.view;
-      els.albumPanel.classList.toggle("visible", view === "album" || view === "nearby");
-      els.sheet.classList.toggle("open", view === "map" && Boolean(state.selectedId));
-      if (view === "nearby") findNearby();
+      activateView(button.dataset.view);
     });
+  });
+}
+
+function activateView(view) {
+  state.activeView = view;
+  document.querySelectorAll(".mode-button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === view);
+  });
+  const panelVisible = view === "album" || view === "nearby";
+  els.albumPanel.classList.toggle("visible", panelVisible);
+  els.albumBackdrop.classList.toggle("visible", panelVisible);
+  els.sheet.classList.toggle("open", view === "map" && Boolean(state.selectedId));
+  if (view === "nearby") findNearby();
+  renderAlbum();
+}
+
+function closePanel() {
+  activateView("map");
+}
+
+function setupPanelDismiss() {
+  let startY = null;
+  els.albumBackdrop.addEventListener("pointerdown", closePanel);
+  document.addEventListener("pointerdown", (event) => {
+    if (!els.albumPanel.classList.contains("visible")) return;
+    if (els.albumPanel.contains(event.target)) return;
+    if (event.target.closest(".mode-switch")) return;
+    closePanel();
+  });
+  els.albumPanel.addEventListener("click", (event) => {
+    if (event.target === els.albumPanel) closePanel();
+  });
+  els.albumPanel.addEventListener("pointerdown", (event) => {
+    startY = event.clientY;
+  });
+  els.albumPanel.addEventListener("pointerup", (event) => {
+    if (startY !== null && event.clientY - startY > 70 && els.albumPanel.scrollTop < 12) {
+      closePanel();
+    }
+    startY = null;
   });
 }
 
